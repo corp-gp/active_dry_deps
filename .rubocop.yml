@@ -1,0 +1,9 @@
+inherit_gem:
+  rubocop-gp:
+    - ./config/default.yml
+
+Gp/OptArgParameters:
+  Enabled: false
+
+AllCops:
+  TargetRubyVersion: 3.0
