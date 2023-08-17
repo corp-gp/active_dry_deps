@@ -5,5 +5,13 @@ inherit_gem:
 Gp/OptArgParameters:
   Enabled: false
 
+Gp/ClassOrModuleDeclaredInWrongFile:
+  Exclude:
+    - lib/active_dry_deps/stub.rb
+
+Gp/ModuleMethodInWrongFile:
+  Exclude:
+    - lib/active_dry_deps/stub.rb
+
 AllCops:
   TargetRubyVersion: 3.0

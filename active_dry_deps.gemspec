@@ -9,7 +9,9 @@ Gem::Specification.new do |spec|
   spec.email = ['andruhafirst@yandex.ru']
 
   spec.summary = 'Dependency injection and resolution support for classes and modules.'
-  spec.description = 'ActiveDryDeps not modify constructor and support Dependency Injection for modules. Adding extra dependencies is easy and improve readability your code.'
+  spec.description = 'ActiveDryDeps not modify constructor and support Dependency Injection for modules.
+                      Also you can import method from any object in your container.
+                      Adding extra dependencies is easy and improve readability your code.'
   spec.homepage = 'https://github.com/corp-gp/active_dry_deps'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.0.0'
