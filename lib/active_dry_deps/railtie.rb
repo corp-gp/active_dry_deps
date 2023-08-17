@@ -3,7 +3,7 @@
 module ActiveDryDeps
   class Railtie < ::Rails::Railtie
 
-    config.after_initialize do
+    config.before_initialize do
       app_namespace = ::Rails.application.class.to_s.split('::').first
       ActiveDryDeps.config.container ||= "#{app_namespace}::Container"
 
