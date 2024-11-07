@@ -6,9 +6,9 @@ RSpec.describe ActiveDryDeps do
   end
 
   it 'dependencies resolved' do
-    expect(Deps.resolve("CreateDeparture")).to eq CreateDeparture
-    expect(Deps.resolve("SupplierSync::ReserveJob")).to eq SupplierSync::ReserveJob
-    expect(Deps.resolve("supplier_sync.reserve_job")).to eq SupplierSync::ReserveJob
+    expect(Deps.resolve('CreateDeparture')).to eq CreateDeparture
+    expect(Deps.resolve('SupplierSync::ReserveJob')).to eq SupplierSync::ReserveJob
+    expect(Deps.resolve('supplier_sync.reserve_job')).to eq SupplierSync::ReserveJob
   end
 
   it 'stub dependencies with `deps`' do
