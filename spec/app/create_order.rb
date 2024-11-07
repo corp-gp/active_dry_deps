@@ -9,7 +9,7 @@ class CreateOrder
   include Deps[
     'CreateDeparture',
     'Utils.message',
-    'ReserveJob.perform_later',
+    'SupplierSync::ReserveJob.perform_later',
     CreateDepartureCallable: 'CreateDeparture.call',
   ]
 

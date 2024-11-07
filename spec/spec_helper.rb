@@ -8,7 +8,7 @@ Bundler.require :default
 
 Rails.application.initialize!
 
-Dir['./spec/app/*.rb'].each { |f| require f }
+Dir['./spec/app/**/*.rb'].each { |f| require f }
 Dir['./spec/support/*.rb'].each { |f| require f }
 
 require 'active_dry_deps/rspec'
