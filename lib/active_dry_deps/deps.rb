@@ -37,7 +37,7 @@ module ActiveDryDeps
         raise DependencyNameInvalid, "name +#{alias_method}+ is not a valid Ruby identifier"
       end
 
-      key = ActiveDryDeps.config.inflector.underscore(resolve_klass).tr('/', '.')
+      key = resolve_key(resolve_klass)
 
       if extract_method
         %(def #{alias_method}(...); ::#{ActiveDryDeps.config.container}['#{key}'].#{extract_method}(...) end\n)
@@ -47,11 +47,7 @@ module ActiveDryDeps
     end
 
     def resolve_key(key)
-      if key.include?('::')
-        ActiveDryDeps.config.inflector.underscore(key).tr('/', '.')
-      else
-        key
-      end
+      ActiveDryDeps.config.inflector.underscore(key).tr('/', '.')
     end
 
     instance_eval <<~RUBY, __FILE__, __LINE__ + 1
