@@ -187,9 +187,12 @@ module GpApp
     end
 
     def finalize
-      set_or_reload(:Container, create_container)
-      Dry::System.register_provider_sources(Pathname(__dir__).join('../system/providers').realpath)
-      create_container.finalize!(freeze: !(::Rails.env.test? || ::Rails.env.development?))
+      container = create_container
+      set_or_reload(:Container, container)
+      if (providers_path = Pathname(__dir__).join("../system/providers")).exist?
+        Dry::System.register_provider_sources(providers_path.realpath)
+      end
+      container.finalize!(freeze: !Rails.env.local?)
     end
 
     def create_container
