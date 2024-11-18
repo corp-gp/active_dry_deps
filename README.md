@@ -151,9 +151,12 @@ end
 gem auto-configuring, but you can override settings
 
 ```ruby
-ActiveDryDeps.config.container = 'MyApp::Container'
-ActiveDryDeps.config.inflector = ActiveSupport::Inflector
-ActiveDryDeps.config.inject_global_constant = 'Deps'
+# config/initializers/active_dry_deps.rb
+ActiveDryDeps.configure do |config|
+  config.container = 'MyApp::Container'
+  config.inflector = ActiveSupport::Inflector
+  config.inject_global_constant = 'Deps'
+end
 ```
 
 ### Recommended container setup with [dry-system](https://dry-rb.org/gems/dry-system/) for Rails
