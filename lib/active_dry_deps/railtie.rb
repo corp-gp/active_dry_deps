@@ -11,5 +11,10 @@ module ActiveDryDeps
       ActiveDryDeps.config.finalize!(freeze_values: true)
     end
 
+    rake_tasks do
+      path = File.expand_path(__dir__)
+      Dir.glob("#{path}/tasks/**/*.rake").each { |f| load f }
+    end
+
   end
 end

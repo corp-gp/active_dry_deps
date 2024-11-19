@@ -13,6 +13,7 @@ PATH
   specs:
     active_dry_deps (0.1.0)
       dry-configurable
+      dry-monitor
 
 GEM
   remote: https://rubygems.org/
@@ -56,12 +57,19 @@ GEM
     dry-core (1.0.1)
       concurrent-ruby (~> 1.0)
       zeitwerk (~> 2.6)
-    dry-inflector (1.0.0)
-    dry-system (1.0.1)
-      dry-auto_inject (~> 1.0, < 2)
+    dry-events (1.0.1)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 1.0, < 2)
+    dry-inflector (1.1.0)
+    dry-monitor (1.0.1)
       dry-configurable (~> 1.0, < 2)
       dry-core (~> 1.0, < 2)
-      dry-inflector (~> 1.0, < 2)
+      dry-events (~> 1.0, < 2)
+    dry-system (1.1.1)
+      dry-auto_inject (~> 1.0)
+      dry-configurable (~> 1.0)
+      dry-core (~> 1.0)
+      dry-inflector (~> 1.0)
     erubi (1.12.0)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)

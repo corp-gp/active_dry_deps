@@ -3,6 +3,8 @@
 module ActiveDryDeps
   module Deps
 
+    extend Notifications::ClassMethods
+
     VALID_NAME = /([a-zA-Z_0-9]*)$/
     METHODS_AS_KLASS = %w[perform_later call].freeze
 
@@ -14,16 +16,41 @@ module ActiveDryDeps
     # include Deps['OrderService::Recalculate.call'] use as `Recalculate()`
     def [](*keys, **aliases)
       str_methods = +''
+      dependencies = []
 
-      keys.each { |resolver| str_methods << str_method(resolver, nil) }
-      aliases.each { |alias_method, resolver| str_methods << str_method(resolver, alias_method) }
+      keys.each do |resolver|
+        dependency_name, str_method = fetch_dependency(resolver, nil)
+        dependencies << dependency_name
+        str_methods << str_method
+      end
+
+      aliases.each do |alias_method, resolver|
+        dependency_name, str_method = fetch_dependency(resolver, alias_method)
+        dependencies << dependency_name
+        str_methods << str_method
+      end
 
       m = Module.new
       m.module_eval(str_methods)
+      m.include(Notifications.included_dependency_decorator(dependencies))
       m
     end
 
-    private def str_method(resolve, alias_method)
+    def resolve(key)
+      container[resolve_key(key)]
+    end
+
+    def resolve_key(key)
+      ActiveDryDeps.config.inflector.underscore(key).tr('/', '.')
+    end
+
+    def container
+      return Deps.const_get(:CONTAINER) if Deps.const_defined?(:CONTAINER)
+
+      Deps.const_set(:CONTAINER, Object.const_get(ActiveDryDeps.config.container))
+    end
+
+    private_class_method def fetch_dependency(resolve, alias_method)
       resolve_klass, extract_method = resolve.split('.')
 
       alias_method ||=
@@ -39,26 +66,15 @@ module ActiveDryDeps
 
       key = resolve_key(resolve_klass)
 
-      if extract_method
-        %(def #{alias_method}(...); ::#{ActiveDryDeps.config.container}['#{key}'].#{extract_method}(...) end\n)
-      else
-        %(def #{alias_method}; ::#{ActiveDryDeps.config.container}['#{key}'] end\n)
-      end
+      str_method =
+        if extract_method
+          %(def #{alias_method}(...); ::#{ActiveDryDeps.config.container}['#{key}'].#{extract_method}(...) end\n)
+        else
+          %(def #{alias_method}; ::#{ActiveDryDeps.config.container}['#{key}'] end\n)
+        end
+
+      [resolve_klass, str_method]
     end
-
-    def resolve_key(key)
-      ActiveDryDeps.config.inflector.underscore(key).tr('/', '.')
-    end
-
-    instance_eval <<~RUBY, __FILE__, __LINE__ + 1
-      # def resolve(key)
-      #   ::MyApp::Container[resolve_key(key)]
-      # end
-
-      def resolve(key)
-        ::#{ActiveDryDeps.config.container}[resolve_key(key)]
-      end
-    RUBY
 
   end
 end

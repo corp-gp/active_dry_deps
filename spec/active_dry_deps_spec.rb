@@ -11,6 +11,13 @@ RSpec.describe ActiveDryDeps do
     expect(Deps.resolve('supplier_sync.reserve_job')).to eq SupplierSync::ReserveJob
   end
 
+  it '#check_references found circular dependencies' do
+    expect { $DEPENDENCY_MAP.check_references }.to raise_error(ActiveDryDeps::CircularDependency, <<~TEXT)
+       Expected the dependency graph to be acyclic, but it contains the following circular dependencies:
+       CreateDeparture → CreateOrder → CreateDeparture
+    TEXT
+  end
+
   it 'stub dependencies with `deps`' do
     service = CreateOrder.new
 
