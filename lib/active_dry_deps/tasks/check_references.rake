@@ -6,7 +6,7 @@ namespace :active_dry_deps do
     dependency_map = ActiveDryDeps::DependencyMap.new
 
     ActiveDryDeps::Deps.subscribe(:included_dependency) do |event|
-      dependency_map.register(event[:receiver], event[:dependencies])
+      dependency_map.register(event[:receiver], event[:dependencies].map(&:name))
     end
 
     require File.join(task.application.original_dir, "config/environment.rb")

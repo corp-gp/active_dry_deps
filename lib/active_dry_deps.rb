@@ -9,6 +9,7 @@ module ActiveDryDeps
   autoload :Deps,          'active_dry_deps/deps'
   autoload :Notifications, 'active_dry_deps/notifications'
   autoload :DependencyMap, 'active_dry_deps/dependency_map'
+  autoload :Dependency,    'active_dry_deps/dependency'
 
   class Error < StandardError; end
   class DependencyNameInvalid < Error; end
