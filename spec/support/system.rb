@@ -28,7 +28,9 @@ module Combustion
 end
 
 class OrderMailer
-  def call = "email-sent"
+
+  def call = 'email-sent'
+
 end
 
 Combustion::Container.register_provider(:order_mailer) do

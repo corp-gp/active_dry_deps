@@ -2,6 +2,7 @@
 
 module ActiveDryDeps
   class DependencyMap
+
     include TSort
 
     attr_reader :references
@@ -26,7 +27,7 @@ module ActiveDryDeps
 
     def check_references
       if references.empty?
-        raise ArgumentError, "No dependency map. You should eager load all your code (or make sure, you are in production environment)"
+        raise ArgumentError, 'No dependency map. You should eager load all your code (or make sure, you are in production environment)'
       end
 
       return true if acyclic?
@@ -49,5 +50,6 @@ module ActiveDryDeps
     private def tsort_each_child(node, &block)
       (references[node] || {}).each(&block)
     end
+
   end
 end

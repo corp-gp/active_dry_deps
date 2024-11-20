@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require "bundler/inline"
+require 'bundler/inline'
 
 gemfile do
-  source "https://rubygems.org"
+  source 'https://rubygems.org'
 
-  gem "benchmark-ips", require: "benchmark/ips"
-  gem "kalibera"
+  gem 'benchmark-ips', require: 'benchmark/ips'
+  gem 'kalibera'
   gem 'rails'
   gem 'dry-container'
   gem 'dry-system'
-  gem "active_dry_deps", path: "."
+  gem 'active_dry_deps', path: '.'
 end
 
 LOADER =
@@ -40,7 +40,7 @@ end
 Container.finalize!
 p Container.keys
 
-ActiveDryDeps.config.container = "Container"
+ActiveDryDeps.config.container = 'Container'
 
 module ActiveDryDeps
   module CurrentDeps
@@ -116,14 +116,14 @@ test_case_new = Array.new(CASES_COUNT) { Class.new }
 puts "\nBenchmark multiple include with multiple providers"
 Benchmark.ips do |x|
   x.warmup = 0
-  x.report("current") do
+  x.report('current') do
     test_case_current.shift.include(ActiveDryDeps::CurrentDeps[*PROVIDERS])
   end
-  x.report("new") do
+  x.report('new') do
     test_case_new.shift.include(ActiveDryDeps::Deps[*PROVIDERS])
   end
   x.compare!
-end; 1
+end
 
 # TestClassCurrent = Class.new
 # TestClassNew = Class.new
@@ -158,10 +158,10 @@ test_case_new = Class.new { include(ActiveDryDeps::Deps[*PROVIDERS]) }.new
 puts "\nBenchmark provider"
 Benchmark.ips do |x|
   x.warmup = 0
-  x.report("current") do
+  x.report('current') do
     PROVIDERS.each { test_case_current.public_send(_1) }
   end
-  x.report("new") do
+  x.report('new') do
     PROVIDERS.each { test_case_new.public_send(_1) }
   end
   x.compare!

@@ -7,9 +7,10 @@ module ActiveDryDeps
 
     module_function
 
-    EVENT_BUS = Dry::Monitor::Notifications.new("active_dry_deps.monitor").tap do |notifications|
-      notifications.register_event(:included_dependency)
-    end
+    EVENT_BUS =
+      Dry::Monitor::Notifications.new('active_dry_deps.monitor').tap do |notifications|
+        notifications.register_event(:included_dependency)
+      end
 
     def included_dependency_decorator(dependencies)
       Module.new.tap do |m|
@@ -23,8 +24,8 @@ module ActiveDryDeps
 
     module ClassMethods
 
-      def subscribe(*args, **options, &block)
-        EVENT_BUS.subscribe(*args, **options, &block)
+      def subscribe(...)
+        EVENT_BUS.subscribe(...)
       end
 
     end

@@ -24,19 +24,19 @@ RSpec.describe ActiveDryDeps do
       Class.new do
         include Deps['CreateOrder.!invalid_identifier']
       end
-    }.to raise_error(ActiveDryDeps::DependencyNameInvalid, "name +!invalid_identifier+ is not a valid Ruby identifier")
+    }.to raise_error(ActiveDryDeps::DependencyNameInvalid, 'name +!invalid_identifier+ is not a valid Ruby identifier')
   end
 
   it 'stub dependencies with `deps`' do
     service = CreateOrder.new
 
     expect(service).to deps(
-                         CreateDepartureCallable: '1',
-                         CreateDeparture: double(call: '2'),
-                         ReserveJob: '3',
-                         message: '4',
-                         order_mailer: double(call: '5'),
-                       )
+      CreateDepartureCallable: '1',
+      CreateDeparture:         double(call: '2'),
+      ReserveJob:              '3',
+      message:                 '4',
+      order_mailer:            double(call: '5'),
+    )
     expect(service.call).to eq %w[1 2 3 4 5]
   end
 
@@ -61,11 +61,11 @@ RSpec.describe ActiveDryDeps do
     end
   end
 
-  describe "check dependencies" do
+  describe 'check dependencies' do
     it '#check_references found circular dependencies' do
       expect { $DEPENDENCY_MAP.check_references }.to raise_error(ActiveDryDeps::CircularDependency, <<~TEXT)
-         Expected the dependency graph to be acyclic, but it contains the following circular dependencies:
-         CreateDeparture → CreateOrder → CreateDeparture
+        Expected the dependency graph to be acyclic, but it contains the following circular dependencies:
+        CreateDeparture → CreateOrder → CreateDeparture
       TEXT
     end
 
