@@ -7,7 +7,7 @@ module ActiveDryDeps
     VALID_CONST_NAME  = /^[[:upper:]][a-zA-Z_0-9\:]*$/
     METHODS_AS_KLASS  = %w[perform_later call].freeze
 
-    attr_reader :name, :receiver_method_name, :resolve_key, :const_name, :method_name
+    attr_reader :name, :receiver_method_name, :resolved_key, :const_name, :method_name
 
     def initialize(resolver, receiver_method_alias: nil)
       extracted_dependency_name, extracted_method_name, rest = resolver.to_s.split('.', 3)
@@ -38,28 +38,28 @@ module ActiveDryDeps
 
       @name = extracted_dependency_name
       @receiver_method_name = receiver_method_name.to_sym
-      @resolve_key = Deps.resolve_key(extracted_dependency_name)
+      @resolved_key = Deps.resolve_key(extracted_dependency_name)
       @const_name = extracted_const_name
       @method_name = extracted_method_name&.to_sym
     end
 
     def receiver_method
-      container_key = resolve_key
-      extracted_method_name = method_name
+      resolved_key = @resolved_key
+      extracted_method_name = @method_name
 
       if extracted_method_name
         proc do |*args, **options, &block|
-          Deps.container[container_key].public_send(extracted_method_name, *args, **options, &block)
+          Deps::CONTAINER[resolved_key].public_send(extracted_method_name, *args, **options, &block)
         end
       else
         proc do
-          Deps.container[container_key]
+          Deps::CONTAINER[resolved_key]
         end
       end
     end
 
     def const_get
-      Object.const_get(const_name) if const_name
+      Object.const_get(@const_name) if @const_name
     end
 
   end

@@ -34,15 +34,15 @@ module ActiveDryDeps
     end
 
     def resolve(key)
-      container.resolve(resolve_key(key))
+      CONTAINER[resolve_key(key)]
     end
 
     def resolve_key(key)
       ActiveDryDeps.config.inflector.underscore(key).tr('/', '.')
     end
 
-    def container
-      return CONTAINER if defined?(CONTAINER)
+    def self.const_missing(const_name)
+      return super unless const_name == :CONTAINER
 
       Deps.const_set(:CONTAINER, Object.const_get(ActiveDryDeps.config.container))
     end
