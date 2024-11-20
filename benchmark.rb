@@ -10,7 +10,7 @@ gemfile do
   gem 'rails'
   gem 'dry-container'
   gem 'dry-system'
-  gem "active_dry_deps", path: "/home/dev/projects/gp/active_dry_deps"
+  gem "active_dry_deps", path: "."
 end
 
 LOADER =
