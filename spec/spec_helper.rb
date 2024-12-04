@@ -6,7 +6,15 @@ require 'rails'
 require 'bundler'
 Bundler.require :default
 
+$DEPENDENCY_MAP = ActiveDryDeps::DependencyMap.new
+$DEPENDENCY_BY_NAME = {}
+
 Rails.application.initialize!
+
+Deps.subscribe(:included_dependency) do |event|
+  $DEPENDENCY_MAP.register(event[:receiver], event[:dependencies].map(&:name))
+  event[:dependencies].each { $DEPENDENCY_BY_NAME[_1.name] = _1 }
+end
 
 Dir['./spec/app/**/*.rb'].each { |f| require f }
 Dir['./spec/support/*.rb'].each { |f| require f }

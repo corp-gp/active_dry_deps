@@ -27,6 +27,18 @@ module Combustion
   end
 end
 
+class OrderMailer
+
+  def call = 'email-sent'
+
+end
+
+Combustion::Container.register_provider(:order_mailer) do
+  start do
+    register(:order_mailer, OrderMailer.new)
+  end
+end
+
 require 'dry/core/container/stub'
 Combustion::Container.enable_stubs!
 

@@ -110,6 +110,37 @@ string # => "rts"
 m # => "success"
 ```
 
+### Configuration
+gem auto-configuring, but you can override settings
+
+```ruby
+# config/initializers/active_dry_deps.rb
+ActiveDryDeps.configure do |config|
+  config.container = 'MyApp::Container'
+  config.inflector = ActiveSupport::Inflector
+  config.inject_global_constant = 'Deps'
+end
+```
+
+### Check dependencies Rake task
+You can check the defined dependencies with Rake task. The task will fail if dependency graph contains the circular dependencies. Make sure you specified `production` environment because the task works only if `Rails.application.config.eager_load == true`
+
+```shell
+RAILS_ENV=production bundle exec rake active_dry_deps:check_cyclic_references 
+```
+
+### Dependencies subscriber
+You can subscribe to include dependency event. It occurs when Ruby loads the file and meets `include ::Deps`. The subscriber can be used to build a dependency graph
+
+# config/initializers/active_dry_deps.rb
+```ruby
+ActiveSupport.on_load(:before_eager_load) do
+  ActiveDryDeps::Deps.subscribe(:included_dependency) do |event|
+    event.payload[:dependencies].each(&:const_get)
+  end
+end
+```
+
 ### Tests (Rspec)
 #### deps
 gem adds rspec matcher for stub dependency, put `require 'active_dry_deps/rspec'` to rspec setup
@@ -145,17 +176,6 @@ it 'stub' do
 
   Deps.unstub('Order::Dependency') # or simple Deps.unstub for unsub all keys
   expect(service_klass.new.call).to be 'failure'
-end
-```
-## Configuration
-gem auto-configuring, but you can override settings
-
-```ruby
-# config/initializers/active_dry_deps.rb
-ActiveDryDeps.configure do |config|
-  config.container = 'MyApp::Container'
-  config.inflector = ActiveSupport::Inflector
-  config.inject_global_constant = 'Deps'
 end
 ```
 
