@@ -25,7 +25,7 @@ module ActiveDryDeps
       cycles.empty?
     end
 
-    def check_references
+    def check_cyclic_references
       if references.empty?
         raise ArgumentError, 'No dependency map. You should eager load all your code (or make sure, you are in production environment)'
       end

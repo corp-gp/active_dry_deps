@@ -126,7 +126,7 @@ end
 You can check the defined dependencies with Rake task. The task will fail if dependency graph contains the circular dependencies. Make sure you specified `production` environment because the task works only if `Rails.application.config.eager_load == true`
 
 ```shell
-RAILS_ENV=production bundle exec rake active_dry_deps:check_references 
+RAILS_ENV=production bundle exec rake active_dry_deps:check_cyclic_references 
 ```
 
 ### Dependencies subscriber
