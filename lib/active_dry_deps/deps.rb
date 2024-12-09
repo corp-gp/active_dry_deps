@@ -5,6 +5,8 @@ module ActiveDryDeps
 
     CONTAINER = Container.new
 
+    extend Notifications::ClassMethods
+
     module_function
 
     # include Deps[routes_admin: 'Lib::Routes.admin'] use as `routes_admin`
@@ -27,6 +29,7 @@ module ActiveDryDeps
         m.define_method(dependency.receiver_method_name, &dependency.receiver_method)
       end
 
+      m.include(Notifications.included_dependency_decorator(dependencies))
       m
     end
 

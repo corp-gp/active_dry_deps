@@ -21,6 +21,10 @@ module ActiveDryDeps
       !@receiver_method.nil?
     end
 
+    def const_get
+      Deps::CONTAINER.resolve(@const_name) if @const_name
+    end
+
     def receiver_method_string
       if @method_name
         <<~RUBY
