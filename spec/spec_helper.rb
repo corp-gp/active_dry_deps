@@ -6,6 +6,9 @@ require "rails"
 require "bundler"
 Bundler.require :default
 
+$DEPENDENCY_MAP = ActiveDryDeps::DependencyMap.new
+$DEPENDENCY_BY_NAME = {}
+
 Rails.application.initialize!
 
 class Mailer
@@ -25,6 +28,11 @@ end
 Deps.register("stats", Class.new { def self.track = "track" })
 Deps.register("tick", -> { rand })
 Deps.register("mailer") { Mailer.new }
+
+Deps.subscribe(:included_dependency) do |event|
+  $DEPENDENCY_MAP.register(event[:receiver], event[:dependencies].map(&:const_name))
+  event[:dependencies].each { $DEPENDENCY_BY_NAME[_1.const_name] = _1 }
+end
 
 Dir["./spec/app/**/*.rb"].each { |f| require f }
 Dir["./spec/support/*.rb"].each { |f| require f }

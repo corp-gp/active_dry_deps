@@ -13,6 +13,10 @@ Gp/ModuleMethodInWrongFile:
   Exclude:
     - lib/active_dry_deps/stub.rb
 
+Style/GlobalVars:
+  Exclude:
+    - spec/**/*.rb
+
 AllCops:
   TargetRubyVersion: 3.0
 

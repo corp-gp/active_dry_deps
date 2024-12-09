@@ -16,6 +16,7 @@ PATH
   specs:
     active_dry_deps (1.0.0)
       dry-configurable
+      dry-monitor
 
 GEM
   remote: https://rubygems.org/
@@ -71,6 +72,13 @@ GEM
       concurrent-ruby (~> 1.0)
       logger
       zeitwerk (~> 2.6)
+    dry-events (1.1.0)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 1.1)
+    dry-monitor (1.0.1)
+      dry-configurable (~> 1.0, < 2)
+      dry-core (~> 1.0, < 2)
+      dry-events (~> 1.0, < 2)
     erubi (1.13.1)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)

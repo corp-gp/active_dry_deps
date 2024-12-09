@@ -2,6 +2,8 @@
 
 class CreateDeparture
 
+  include Deps['CreateOrder']
+
   def self.call
     "CreateDeparture"
   end
