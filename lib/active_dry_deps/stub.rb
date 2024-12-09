@@ -2,16 +2,34 @@
 
 module ActiveDryDeps
 
-  module Stub
+  module StubDeps
 
-    CONTAINER_CONST = Object.const_get(ActiveDryDeps.config.container)
-
-    def stub(path, ...)
-      CONTAINER_CONST.stub(Deps.resolve_key(path), ...)
+    def stub(const_name, proxy_object, &block)
+      self::CONTAINER.stub(const_name, proxy_object, &block)
     end
 
     def unstub(*keys)
-      CONTAINER_CONST.unstub(*keys.map { resolve_key(_1) })
+      self::CONTAINER.unstub(*keys)
+    end
+
+  end
+
+  module StubContainer
+
+    def stub(const_name, proxy_object)
+      if block_given?
+        begin
+          self[const_name] = proxy_object
+        ensure
+          delete(const_name)
+        end
+      else
+        self[const_name] = proxy_object
+      end
+    end
+
+    def unstub(*unstub_keys)
+      (unstub_keys.empty? ? keys : unstub_keys).each { |const_name| delete(const_name) }
     end
 
   end
@@ -19,7 +37,8 @@ module ActiveDryDeps
   module Deps
 
     def self.enable_stubs!
-      extend Stub
+      Deps::CONTAINER.extend(StubContainer)
+      Deps.extend StubDeps
     end
 
   end
