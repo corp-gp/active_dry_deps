@@ -4,7 +4,7 @@ module SupplierSync
   class ReserveJob
 
     def self.perform_later
-      'perform_later'
+      'job-performed'
     end
 
   end
