@@ -36,8 +36,8 @@ RSpec.describe ActiveDryDeps do
       expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello]
     end
 
-    it 'direct stub with `Deps.stub`' do
-      Deps.stub('CreateDeparture', double(call: '1'))
+    it 'stubs dependency at the container level' do
+      Deps.stub('CreateDeparture') { double(call: '1') }
 
       expect(CreateOrder.call).to eq %w[1 1 job-performed message-ok email-sent-hello]
 
@@ -46,10 +46,15 @@ RSpec.describe ActiveDryDeps do
       expect_call_orig
     end
 
-    it 'direct stub with `Deps.sub` with block' do
-      Deps.stub('CreateDeparture', double(call: '1')) do
-        expect(CreateOrder.call).to eq %w[1 1 job-performed message-ok email-sent-hello]
-      end
+    it 'raises exception when calls a stub block' do
+      expect {
+        Deps.stub('CreateDeparture') { raise StandardError, 'Something went wrong' }
+      }.not_to raise_error
+
+      expect { CreateOrder.call }
+        .to raise_error(StandardError, 'Something went wrong')
+
+      Deps.unstub
 
       expect_call_orig
     end

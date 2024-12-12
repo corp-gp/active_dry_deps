@@ -4,8 +4,8 @@ module ActiveDryDeps
 
   module StubDeps
 
-    def stub(key, proxy_object, &block)
-      self::CONTAINER.stub(key, proxy_object, &block)
+    def stub(key, &block)
+      self::CONTAINER.stub(key, &block)
     end
 
     def unstub(*keys)
@@ -20,16 +20,8 @@ module ActiveDryDeps
       const_set(:CONTAINER_ORIG, container.dup)
     end
 
-    def stub(key, proxy_object)
-      if block_given?
-        begin
-          self[key] = proxy_object
-        ensure
-          unstub(key)
-        end
-      else
-        self[key] = proxy_object
-      end
+    def stub(key, &block)
+      self[key] = ActiveDryDeps::Container::Entry.new(proc: block)
     end
 
     def unstub(*unstub_keys)
