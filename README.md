@@ -136,8 +136,8 @@ For dependency testing, add the following to Rspec setup
 # spec/rails_helper.rb
 ```ruby
 # ...
-require "active_dry_deps/rspec"
-require "active_dry_deps/stub"
+require 'active_dry_deps/rspec'
+require 'active_dry_deps/stub'
 
 Deps.enable_stubs!
 ```
