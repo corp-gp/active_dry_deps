@@ -4,8 +4,8 @@ module ActiveDryDeps
 
   module StubDeps
 
-    def stub(key, &block)
-      self::CONTAINER.stub(key, &block)
+    def stub(key, value)
+      self::CONTAINER.stub(key, value)
     end
 
     def unstub(*keys)
@@ -20,8 +20,8 @@ module ActiveDryDeps
       const_set(:CONTAINER_ORIG, container.dup)
     end
 
-    def stub(key, &block)
-      self[key] = ActiveDryDeps::Container::Entry.new(proc: block)
+    def stub(key, value)
+      self[key] = value
     end
 
     def unstub(*unstub_keys)
