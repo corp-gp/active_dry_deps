@@ -45,7 +45,7 @@ RSpec.describe ActiveDryDeps do
     it 'checks the container key' do
       expect {
         Deps.register(:mock, 1)
-      }.to raise_error(ArgumentError, "+mock+ must be a String")
+      }.to raise_error(ArgumentError, '+mock+ must be a String')
     end
   end
 
