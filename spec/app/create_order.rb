@@ -10,6 +10,9 @@ class CreateOrder
     'CreateDeparture',
     'Utils.message',
     'SupplierSync::ReserveJob.perform_later',
+    'mailer',
+    'tick',
+    'stats.track',
     CreateDepartureCallable: 'CreateDeparture.call',
   ]
 
@@ -19,6 +22,8 @@ class CreateOrder
       CreateDeparture().call,
       ReserveJob(),
       (message('ok') if is_message),
+      mailer.call('hello'),
+      track,
     ]
   end
 
