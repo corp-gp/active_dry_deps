@@ -9,7 +9,11 @@ module ActiveDryDeps
     end
 
     def register(container_key, value = nil)
-      self[container_key.to_s] = block_given? ? yield : value
+      unless container_key.is_a?(String)
+        raise ArgumentError, "+#{container_key}+ must be a String"
+      end
+
+      self[container_key] = block_given? ? yield : value
     end
 
   end

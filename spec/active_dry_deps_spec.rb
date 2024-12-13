@@ -41,6 +41,14 @@ RSpec.describe ActiveDryDeps do
     }.to raise_error(ActiveDryDeps::DependencyNameInvalid, 'name +!invalid_identifier+ is not a valid Ruby identifier')
   end
 
+  describe '#register' do
+    it 'checks the container key' do
+      expect {
+        Deps.register(:mock, 1)
+      }.to raise_error(ArgumentError, "+mock+ must be a String")
+    end
+  end
+
   describe '#stub' do
     def expect_call_orig
       expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track]

@@ -16,9 +16,9 @@ class Mailer
 
 end
 
-Deps.register(:stats) { Class.new { def self.track = 'track' } }
-Deps.register(:tick, -> { rand })
-Deps.register(:mailer) { Mailer.new }
+Deps.register('stats') { Class.new { def self.track = 'track' } }
+Deps.register('tick', -> { rand })
+Deps.register('mailer') { Mailer.new }
 
 Dir['./spec/app/**/*.rb'].each { |f| require f }
 Dir['./spec/support/*.rb'].each { |f| require f }
