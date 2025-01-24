@@ -3,7 +3,7 @@
 module ActiveDryDeps
   class Container < Hash
 
-    def resolve(container_key)
+    def resolve_internal(container_key)
       value = self[container_key]
       value.is_a?(Proc) ? value.call : value
     end

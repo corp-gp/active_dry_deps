@@ -84,7 +84,7 @@ module ActiveDryDeps
         # end
 
         def %<receiver_method_name>s(...)
-          (::ActiveDryDeps::Deps::CONTAINER.resolve("%<container_key_or_const_name>s") || %<container_key_or_const_name>s).%<method_name>s(...)
+          (::ActiveDryDeps::Deps::CONTAINER.resolve_internal("%<container_key_or_const_name>s") || %<container_key_or_const_name>s).%<method_name>s(...)
         end
       RUBY
       { container: true, method_call: false }  => <<~RUBY,
@@ -93,7 +93,7 @@ module ActiveDryDeps
         # end
 
         def %<receiver_method_name>s
-          ::ActiveDryDeps::Deps::CONTAINER.resolve("%<container_key_or_const_name>s") || %<container_key_or_const_name>s
+          ::ActiveDryDeps::Deps::CONTAINER.resolve_internal("%<container_key_or_const_name>s") || %<container_key_or_const_name>s
         end
       RUBY
       { container: false, method_call: true }  => <<~RUBY,
