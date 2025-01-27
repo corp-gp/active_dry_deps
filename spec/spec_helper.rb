@@ -8,6 +8,18 @@ Bundler.require :default
 
 Rails.application.initialize!
 
+class Mailer
+
+  def call(message)
+    "email-sent-#{message}"
+  end
+
+end
+
+Deps.register('stats') { Class.new { def self.track = 'track' } }
+Deps.register('tick', -> { rand })
+Deps.register('mailer') { Mailer.new }
+
 Dir['./spec/app/**/*.rb'].each { |f| require f }
 Dir['./spec/support/*.rb'].each { |f| require f }
 

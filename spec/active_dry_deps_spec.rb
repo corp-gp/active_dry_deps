@@ -2,20 +2,30 @@
 
 RSpec.describe ActiveDryDeps do
   it 'all dependencies works' do
-    expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture perform_later message-ok]
-  end
-
-  it 'dependencies resolved' do
-    expect(Deps.resolve('CreateDeparture')).to eq CreateDeparture
-    expect(Deps.resolve('SupplierSync::ReserveJob')).to eq SupplierSync::ReserveJob
-    expect(Deps.resolve('supplier_sync.reserve_job')).to eq SupplierSync::ReserveJob
+    expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track]
   end
 
   it 'stub dependencies with `deps`' do
     service = CreateOrder.new
 
-    expect(service).to deps(CreateDepartureCallable: '1', CreateDeparture: double(call: '2'), ReserveJob: '3', message: '4')
-    expect(service.call).to eq %w[1 2 3 4]
+    expect(service).to deps(
+      CreateDepartureCallable: '1',
+      CreateDeparture:         double(call: '2'),
+      ReserveJob:              '3',
+      message:                 '4',
+      mailer:                  double(call: '5'),
+      track:                   '6',
+    )
+    expect(service.call).to eq %w[1 2 3 4 5 6]
+  end
+
+  it 'resolves block in runtime' do
+    service = CreateOrder.new
+
+    first_tick = service.tick
+    second_tick = service.tick
+
+    expect(second_tick).not_to eq(first_tick)
   end
 
   it 'stub dependency with `deps` not runnable' do
@@ -25,17 +35,46 @@ RSpec.describe ActiveDryDeps do
     service.call(is_message: false)
   end
 
-  it 'direct stub with `Deps.sub`' do
-    Deps.stub('create_departure', double(call: '1'))
-
-    expect(CreateOrder.call).to eq %w[1 1 perform_later message-ok]
-
-    Deps.unstub
+  it 'invalid method identifier not allowed' do
+    expect {
+      Class.new { include Deps['CreateOrder.!invalid_identifier'] }
+    }.to raise_error(ActiveDryDeps::DependencyNameInvalid, 'name +!invalid_identifier+ is not a valid Ruby identifier')
   end
 
-  it 'direct stub with `Deps.sub` with block' do
-    Deps.stub('create_departure', double(call: '1')) do
-      expect(CreateOrder.call).to eq %w[1 1 perform_later message-ok]
+  describe '#register' do
+    it 'checks the container key' do
+      expect {
+        Deps.register(:mock, 1)
+      }.to raise_error(ArgumentError, '+mock+ must be a String')
+    end
+  end
+
+  describe '#stub' do
+    def expect_call_orig
+      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track]
+    end
+
+    it 'stubs dependency at the container level' do
+      Deps.stub('CreateDeparture', double(call: '1'))
+
+      expect(CreateOrder.call).to eq %w[1 1 job-performed message-ok email-sent-hello track]
+
+      Deps.unstub
+
+      expect_call_orig
+    end
+
+    it 'raises exception when calls a stub block' do
+      expect {
+        Deps.stub('CreateDeparture', -> { raise StandardError, 'Something went wrong' })
+      }.not_to raise_error
+
+      expect { CreateOrder.call }
+        .to raise_error(StandardError, 'Something went wrong')
+
+      Deps.unstub
+
+      expect_call_orig
     end
   end
 end

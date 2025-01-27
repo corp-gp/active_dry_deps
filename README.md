@@ -20,19 +20,10 @@ subject.
 ## Usage
 
 ### Basic
-Under the hood `active_dry_deps` uses a container like [dry-container](https://dry-rb.org/gems/dry-container) and convert key to underscore for fetch from container.
-For auto-registration dependencies use [dry-system](https://dry-rb.org/gems/dry-system/).
+Dependencies are injected by listing their names: `Deps['Warehouse::CreateDepartureService.call']`. This notation is familiar to Ruby developers. It helps to find code in the project (compares to abstract container keys), and simplifies the migration from constants in code to defining dependencies
 
 ```ruby
-MyApp::Container.register('warehouse.create_departure_service', Class.new { def self.call = 'failure' })
-include Deps['Warehouse::CreateDepartureService.call']
-```
-
-`Deps['Warehouse::CreateDepartureService.call']` this notation is familiar to Ruby developers, helps to find code in the project, and simplifies the migration from constants in code to defining dependencies.
-
-```ruby
-class CreateOrderService < ServiceObject
-
+class CreateOrderService
   include Deps[
     'Warehouse::CreateDepartureService.call',
     'Warehouse::ReserveJob.perform_later',
@@ -59,8 +50,10 @@ class CreateOrderService < ServiceObject
 end
 ```
 
+Rspec matcher `deps` allows to isolate dependencies in tests. It simplifies unit testing
+
 ```ruby
-describe 'CreateOrderService' do
+Rspec.describe CreateOrderService do
   it 'success create order' do
     service = described_class.new(user: create(:user), zip_code: 67_345)
     expect(service).to deps(CreateDepartureService: double(success?: true), ReserveJob: spy, track: spy)
@@ -71,51 +64,89 @@ end
 
 ```
 
-### Import methods
-You can inject any method from object in your container
+#### Register custom dependency
+You can define an arbitrary object as a dependency with method `Deps.register`
 
 ```ruby
-MyApp::Container.register(:str, 'str')
-MyApp::Container.register(:service, Module.new { def self.success? = true } )
+class OrderMailer
+  def send_mail = 'email sent'
+end
 
-include Deps['str.reverse', 'service.success?']
-reverse # => "rts"
-success? # => true
+Deps.register('mailer') { OrderMailer.new }
+
+class CreateOrderService
+  include Deps['mailer']
+
+  def call
+    mailer.send_mail
+  end
+end
+
+CreateOrderService.new.call # => email sent
+```
+
+### Import methods
+You can inject any method from constant as dependency
+
+```ruby
+class OrderRepository
+  def self.overdue_order_ids = [1, 2, 3]
+end
+
+include Deps['OrderRepository.overdue_order_ids']
+
+overdue_order_ids # => [1, 2, 3]
 ```
 
 ### Import callable methods
-By default, when `call` or `perform_later` methods are imported, the name of the dependency is taken from the name of the constant:
-```ruby
-  include Deps[
-    'Warehouse::CreateDepartureService.call', # callable
-    'Warehouse::ReserveJob.perform_later', # callable
-    'Warehouse::ReserveJob.perform_now',
-    'Warehouse::ProductActivateQuery',
-  ]
+There is a special convention for naming some methods. By default, when `call` or `perform_later` methods are imported, the name of the dependency is taken from the name of the constant, not by method name
 
-  # use as
-  CreateDepartureService()
-  ReserveJob()
-  perform_now
-  ProductActivateQuery().run
+```ruby
+include Deps[
+  'Warehouse::CreateDepartureService.call', # callable
+  'Warehouse::ReserveJob.perform_later', # callable
+  'Warehouse::ReserveJob.perform_now',
+  'Warehouse::ProductActivateQuery',
+]
+
+# use as
+CreateDepartureService() # Warehouse::CreateDepartureService.call
+ReserveJob() # Warehouse::ReserveJob.perform_later
+perform_now # Warehouse::ReserveJob.perform_now
+ProductActivateQuery().run # Warehouse::ProductActivateQuery.run
 ```
 
-Recommends using prefixes (`Service`, `Job`, `Query`) in the name of the constant for easy reading of the dependency type.
+Recommends using suffixes (`Service`, `Job`, `Query`) in the name of the constant for easy reading of the dependency type.
 
 ### Aliases
+Dependency can have an alias for more intuitive access. Keep in mind that dependencies with aliases should go at the end of the list (this is Ruby feature)
 
 ```ruby
-include Deps[string: 'str.reverse', m: 'module']
-string # => "rts"
-m # => "success"
+include Deps['OrderMailer', product_repo: 'Warehouse::ProductRepository']
+
+product_repo # Warehouse::ProductRepository
+OrderMailer() # OrderMailer
 ```
 
 ### Tests (Rspec)
+
+#### setup
+For dependency testing, add the following to Rspec setup
+
+# spec/rails_helper.rb
+```ruby
+# ...
+require 'active_dry_deps/rspec'
+require 'active_dry_deps/stub'
+
+Deps.enable_stubs!
+```
+
 #### deps
-gem adds rspec matcher for stub dependency, put `require 'active_dry_deps/rspec'` to rspec setup
+The gem adds Rspec matcher `deps` for stub dependency
 
 ```ruby
-GpApp::Container.register('order.dependency', Class.new { def self.call = 'failure' })
+Deps.register('order.dependency') { Class.new { def self.call = 'failure' } }
 
 let(:service_klass) do
   Class.new do
@@ -138,101 +169,27 @@ end
 ```
 
 #### stub, unstub
+Dependency can be stubbed at the container level. This allows to override all calls to it
+
 ```ruby
 it 'stub' do
   Deps.stub('Order::Dependency', double(call: 'success'))
   expect(service_klass.new.call).to be 'success'
 
-  Deps.unstub('Order::Dependency') # or simple Deps.unstub for unsub all keys
+  Deps.unstub('Order::Dependency') # or Deps.unstub() for unsub all keys
   expect(service_klass.new.call).to be 'failure'
 end
 ```
+
 ## Configuration
-gem auto-configuring, but you can override settings
+The gem is auto-configuring, but you can override settings
 
 ```ruby
 # config/initializers/active_dry_deps.rb
 ActiveDryDeps.configure do |config|
-  config.container = 'MyApp::Container'
   config.inflector = ActiveSupport::Inflector
   config.inject_global_constant = 'Deps'
 end
-```
-
-### Recommended container setup with [dry-system](https://dry-rb.org/gems/dry-system/) for Rails
-
-`config/initializers/system.rb`
-
-```ruby
-require 'dry/system/container'
-
-module GpApp
-  class ContainerRailtie < Rails::Railtie
-
-    LOADER =
-      Class.new(Dry::System::Loader) do
-        def self.call(component, *args)
-          constant = self.constant(component)
-
-          if singleton?(constant)
-            constant.instance(*args)
-          else
-            constant # constant.new(*args) - THIS LINE REWRITED from Dry::System::Loader
-          end
-        end
-      end
-
-    # https://api.rubyonrails.org/classes/Rails/Railtie.html
-    # Add a to_prepare block which is executed once in production
-    # and before each request in development.
-    config.to_prepare do
-      ContainerRailtie.finalize
-    end
-
-    def finalize
-      container = create_container
-      set_or_reload(:Container, container)
-      if (providers_path = Pathname(__dir__).join("../system/providers")).exist?
-        Dry::System.register_provider_sources(providers_path.realpath)
-      end
-      container.finalize!(freeze: !Rails.env.local?)
-    end
-
-    def create_container
-      Class.new(Dry::System::Container) do
-        configure do |config|
-          config.inflector = ActiveSupport::Inflector
-          config.root = Rails.root.join('app')
-
-          %w[domains jobs queries services mailers].each do |dir_name|
-            config.component_dirs.add dir_name do |dir|
-              dir.loader = LOADER
-              dir.memoize = true
-            end
-          end
-
-          config.component_dirs.add '../lib' do |dir|
-            dir.loader = LOADER
-            dir.memoize = true
-          end
-        end
-      end
-    end
-
-    def set_or_reload(const_name, const)
-      remove_constant(const_name)
-      GpApp.const_set(const_name, const)
-    end
-
-    def remove_constant(const_name)
-      if GpApp.const_defined?(const_name, false)
-        GpApp.__send__(:remove_const, const_name)
-      end
-    end
-
-  end
-end
-
 ```
 
 ## Development
