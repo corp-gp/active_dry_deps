@@ -35,7 +35,7 @@ module ActiveDryDeps
       dependency_name = @container_key || @const_name
       <<~RUBY
         raise(::ActiveDryDeps::DependencyNotRegistered, <<~TEXT)
-          Dependency +#{dependency_name}+ not registered.#{' '}
+          Dependency +#{dependency_name}+ not registered. 
           Register it with `ActiveDryDeps::Deps.register('#{dependency_name}', ...)`
         TEXT
       RUBY
@@ -102,7 +102,7 @@ module ActiveDryDeps
         # end
 
         def %<receiver_method_name>s(...)
-          dependency_const =#{' '}
+          dependency_const = 
             if ::ActiveDryDeps::Deps::CONTAINER.key?("%<container_key>s")
               ::ActiveDryDeps::Deps::CONTAINER.resolve_internal("%<container_key>s")
             else
