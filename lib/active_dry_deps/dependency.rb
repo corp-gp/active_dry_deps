@@ -13,20 +13,32 @@ module ActiveDryDeps
       def receiver_method_string
         Kernel.sprintf(
           METHOD_TEMPLATES.fetch(container: true, method_call: !@method_name.nil?),
-          receiver_method_name:        @receiver_method_name,
-          container_key_or_const_name: @const_name || @container_key,
-          method_name:                 @method_name,
+          receiver_method_name: @receiver_method_name,
+          container_key:        @container_key || @const_name, # @const_name fallback for stub constant in test
+          const_name:           @const_name || dependency_not_registered_error_string,
+          method_name:          @method_name,
         )
       end
     else
       def receiver_method_string
         Kernel.sprintf(
           METHOD_TEMPLATES.fetch(container: !@container_key.nil?, method_call: !@method_name.nil?),
-          receiver_method_name:        @receiver_method_name,
-          container_key_or_const_name: @const_name || @container_key,
-          method_name:                 @method_name,
+          receiver_method_name: @receiver_method_name,
+          container_key:        @container_key,
+          const_name:           @const_name || dependency_not_registered_error_string,
+          method_name:          @method_name,
         )
       end
+    end
+
+    private def dependency_not_registered_error_string
+      dependency_name = @container_key || @const_name
+      <<~RUBY
+        raise(::ActiveDryDeps::DependencyNotRegistered, <<~TEXT)
+          Dependency +#{dependency_name}+ not registered. 
+          Register it with `ActiveDryDeps::Deps.register('#{dependency_name}', ...)`
+        TEXT
+      RUBY
     end
 
     VALID_CONST_NAME  = /^[[:upper:]][[[:alnum:]]:_]*$/
@@ -79,21 +91,41 @@ module ActiveDryDeps
 
     METHOD_TEMPLATES = {
       { container: true, method_call: true }   => <<~RUBY,
-        # def CreateOrder(...)
-        #   ::ActiveDryDeps::Deps::CONTAINER.resolve("OrderService::Create").call(...)
+        # def CreateOrder
+        #   dependency_const =
+        #     if ::ActiveDryDeps::Deps::CONTAINER.key?("OrderService::Create")
+        #       ::ActiveDryDeps::Deps::CONTAINER.resolve("OrderService::Create")
+        #     else
+        #       OrderService::Create
+        #     end
+        #   dependency_const.call(...)
         # end
 
         def %<receiver_method_name>s(...)
-          (::ActiveDryDeps::Deps::CONTAINER.resolve_internal("%<container_key_or_const_name>s") || %<container_key_or_const_name>s).%<method_name>s(...)
+          dependency_const = 
+            if ::ActiveDryDeps::Deps::CONTAINER.key?("%<container_key>s")
+              ::ActiveDryDeps::Deps::CONTAINER.resolve_internal("%<container_key>s")
+            else
+              %<const_name>s
+            end
+          dependency_const.%<method_name>s(...)
         end
       RUBY
       { container: true, method_call: false }  => <<~RUBY,
         # def CreateOrder
-        #   ::ActiveDryDeps::Deps::CONTAINER.resolve("OrderService::Create")
+        #   if ::ActiveDryDeps::Deps::CONTAINER.key?("OrderService::Create")
+        #     ::ActiveDryDeps::Deps::CONTAINER.resolve("OrderService::Create")
+        #   else
+        #     OrderService::Create
+        #   end
         # end
 
         def %<receiver_method_name>s
-          ::ActiveDryDeps::Deps::CONTAINER.resolve_internal("%<container_key_or_const_name>s") || %<container_key_or_const_name>s
+          if ::ActiveDryDeps::Deps::CONTAINER.key?("%<container_key>s")
+            ::ActiveDryDeps::Deps::CONTAINER.resolve_internal("%<container_key>s")
+          else
+            %<const_name>s
+          end
         end
       RUBY
       { container: false, method_call: true }  => <<~RUBY,
@@ -102,7 +134,7 @@ module ActiveDryDeps
         # end
 
         def %<receiver_method_name>s(...)
-          %<container_key_or_const_name>s.%<method_name>s(...)
+          %<const_name>s.%<method_name>s(...)
         end
       RUBY
       { container: false, method_call: false } => <<~RUBY,
@@ -111,7 +143,7 @@ module ActiveDryDeps
         # end
 
         def %<receiver_method_name>s
-          %<container_key_or_const_name>s
+          %<const_name>s
         end
       RUBY
     }.freeze

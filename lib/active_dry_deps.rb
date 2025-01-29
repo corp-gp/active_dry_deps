@@ -12,5 +12,6 @@ module ActiveDryDeps
 
   class Error < StandardError; end
   class DependencyNameInvalid < Error; end
+  class DependencyNotRegistered < Error; end
 
 end
