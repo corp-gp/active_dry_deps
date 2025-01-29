@@ -53,7 +53,7 @@ RSpec.describe ActiveDryDeps do
       expect {
         service = Class.new { include Deps['unknown_method'] }
         service.new.unknown_method
-      }.to raise_error(::ActiveDryDeps::DependencyNotRegistered, /.+unknown_method.+not registered/)
+      }.to raise_error(ActiveDryDeps::DependencyNotRegistered, /.+unknown_method.+not registered/)
     end
 
     it 'fails when method not defined' do
@@ -91,7 +91,7 @@ RSpec.describe ActiveDryDeps do
 
       service = CreateOrder.new
 
-      expect(service.tick).to eq nil
+      expect(service.tick).to be_nil
     end
 
     it 'raises exception when calls a stub block' do
