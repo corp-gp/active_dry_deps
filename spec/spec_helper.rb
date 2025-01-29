@@ -16,7 +16,13 @@ class Mailer
 
 end
 
-Deps.register('stats') { Class.new { def self.track = 'track' } }
+class PushService
+
+  def self.call = 'original-push'
+
+end
+
+Deps.register('stats', Class.new { def self.track = 'track' })
 Deps.register('tick', -> { rand })
 Deps.register('mailer') { Mailer.new }
 
@@ -24,6 +30,8 @@ Dir['./spec/app/**/*.rb'].each { |f| require f }
 Dir['./spec/support/*.rb'].each { |f| require f }
 
 require 'active_dry_deps/rspec'
+
+Deps.permanent_stub('PushService', Class.new { def self.call = 'push' })
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

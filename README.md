@@ -140,13 +140,17 @@ require 'active_dry_deps/rspec'
 require 'active_dry_deps/stub'
 
 Deps.enable_stubs!
+
+RSpec.configure do |config|
+  config.after(:each) { Deps.unstub }
+end
 ```
 
 #### deps
 The gem adds Rspec matcher `deps` for stub dependency
 
 ```ruby
-Deps.register('order.dependency') { Class.new { def self.call = 'failure' } }
+Deps.register('order.dependency', Class.new { def self.call = 'failure' })
 
 let(:service_klass) do
   Class.new do
@@ -180,6 +184,29 @@ it 'stub' do
   expect(service_klass.new.call).to be 'failure'
 end
 ```
+
+#### permanent_stub, permanent_unstub
+Sometimes it is necessary to stub dependencies for all or almost all tests
+
+# spec/rails_helper.rb
+```ruby
+# ...
+Deps.enable_stubs!
+
+Deps.permanent_stub('PushService', Class.new { def self.call = 'webpush' })
+```
+
+Dependency stubbed with `permanent_stub` may be restored only with `permanent_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
+
+```ruby
+it 'sends webpush' do
+  Deps.permanent_unstub('PushService')
+  
+  # expect(PushService.call).to ...
+end
+```
+
+*`Deps.permanent_stub` should not be used within examples*
 
 ## Configuration
 The gem is auto-configuring, but you can override settings

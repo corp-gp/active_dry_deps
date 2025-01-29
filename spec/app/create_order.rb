@@ -13,6 +13,7 @@ class CreateOrder
     'mailer',
     'tick',
     'stats.track',
+    'PushService',
     CreateDepartureCallable: 'CreateDeparture.call',
   ]
 
@@ -24,6 +25,7 @@ class CreateOrder
       (message('ok') if is_message),
       mailer.call('hello'),
       track,
+      PushService().call,
     ]
   end
 

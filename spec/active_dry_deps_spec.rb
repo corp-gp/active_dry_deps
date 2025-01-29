@@ -2,7 +2,7 @@
 
 RSpec.describe ActiveDryDeps do
   it 'all dependencies works' do
-    expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track]
+    expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track push]
   end
 
   it 'stub dependencies with `deps`' do
@@ -15,8 +15,9 @@ RSpec.describe ActiveDryDeps do
       message:                 '4',
       mailer:                  double(call: '5'),
       track:                   '6',
+      PushService:             double(call: '7'),
     )
-    expect(service.call).to eq %w[1 2 3 4 5 6]
+    expect(service.call).to eq %w[1 2 3 4 5 6 7]
   end
 
   it 'resolves block in runtime' do
@@ -73,17 +74,11 @@ RSpec.describe ActiveDryDeps do
   end
 
   describe '#stub' do
-    it 'stubs dependency at the container level' do
+    it 'stubs dependency' do
       Deps.stub('CreateDeparture', double(call: '1'))
+      Deps.stub('PushService', double(call: '2'))
 
-      expect(CreateOrder.call).to eq %w[1 1 job-performed message-ok email-sent-hello track]
-    end
-
-    it 'unstub dependency' do
-      Deps.stub('CreateDeparture', double(call: '1'))
-      Deps.unstub
-
-      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track]
+      expect(CreateOrder.call).to eq %w[1 1 job-performed message-ok email-sent-hello track 2]
     end
 
     it 'stubs dependency with nil' do
@@ -101,6 +96,21 @@ RSpec.describe ActiveDryDeps do
 
       expect { CreateOrder.call }
         .to raise_error(StandardError, 'Something went wrong')
+    end
+  end
+
+  describe '#unstub' do
+    it 'unstub dependency' do
+      Deps.stub('CreateDeparture', double(call: '!'))
+      Deps.unstub
+
+      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track push]
+    end
+
+    it 'unstub permanent' do
+      Deps.permanent_unstub
+
+      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track original-push]
     end
   end
 end
