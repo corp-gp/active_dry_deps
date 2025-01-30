@@ -12,12 +12,12 @@ module ActiveDryDeps
       self::CONTAINER.unstub(*keys)
     end
 
-    def permanent_stub(key, value)
-      self::CONTAINER.stub(key, value, permanent: true)
+    def shared_stub(key, value)
+      self::CONTAINER.stub(key, value, shared: true)
     end
 
-    def permanent_unstub(*keys)
-      self::CONTAINER.unstub(*keys, permanent: true)
+    def shared_unstub(*keys)
+      self::CONTAINER.unstub(*keys, shared: true)
     end
 
   end
@@ -26,21 +26,21 @@ module ActiveDryDeps
 
     def self.extended(container)
       const_set(:CONTAINER_ORIG, container.dup)
-      const_set(:PERMANENT_STUBS, {})
+      const_set(:SHARED_STUBS, {})
     end
 
-    def stub(key, value, permanent: false)
-      PERMANENT_STUBS[key] = value if permanent
+    def stub(key, value, shared: false)
+      SHARED_STUBS[key] = value if shared
 
       self[key] = value
     end
 
-    def unstub(*unstub_keys, permanent: false)
+    def unstub(*unstub_keys, shared: false)
       unstubbed_container =
-        if permanent
+        if shared
           CONTAINER_ORIG
         else
-          CONTAINER_ORIG.merge(PERMANENT_STUBS)
+          CONTAINER_ORIG.merge(SHARED_STUBS)
         end
       if unstub_keys.empty?
         replace(unstubbed_container)

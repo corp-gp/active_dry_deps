@@ -185,7 +185,7 @@ it 'stub' do
 end
 ```
 
-#### permanent_stub, permanent_unstub
+#### shared_stub, shared_unstub
 Sometimes it is necessary to stub dependencies for all or almost all tests
 
 # spec/rails_helper.rb
@@ -193,20 +193,20 @@ Sometimes it is necessary to stub dependencies for all or almost all tests
 # ...
 Deps.enable_stubs!
 
-Deps.permanent_stub('PushService', Class.new { def self.call = 'webpush' })
+Deps.shared_stub('PushService', Class.new { def self.call = 'webpush' })
 ```
 
-Dependency stubbed with `permanent_stub` may be restored only with `permanent_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
+Dependency stubbed with `shared_stub` may be restored only with `shared_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
 
 ```ruby
 it 'sends webpush' do
-  Deps.permanent_unstub('PushService')
+  Deps.shared_unstub('PushService')
   
   # expect(PushService.call).to ...
 end
 ```
 
-*`Deps.permanent_stub` should not be used within examples*
+*`Deps.shared_stub` should not be used within examples*
 
 ## Configuration
 The gem is auto-configuring, but you can override settings

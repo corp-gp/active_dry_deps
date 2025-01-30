@@ -107,8 +107,8 @@ RSpec.describe ActiveDryDeps do
       expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track push]
     end
 
-    it 'unstub permanent' do
-      Deps.permanent_unstub
+    it 'unstub shared' do
+      Deps.shared_unstub
 
       expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track original-push]
     end
