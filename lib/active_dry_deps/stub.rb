@@ -2,9 +2,6 @@
 
 module ActiveDryDeps
   module StubDeps
-    CONTAINER_ORIG = nil
-    SHARED_STUBS   = {}
-
     def stub(key, value)
       self::CONTAINER.stub(key, value)
     end
@@ -46,6 +43,7 @@ module ActiveDryDeps
   module Deps
     def self.enable_stubs!
       StubDeps.const_set(:CONTAINER_ORIG, Deps::CONTAINER.dup)
+      StubDeps.const_set(:SHARED_STUBS, {})
 
       Deps::CONTAINER.extend(StubContainer)
       Deps.extend StubDeps
