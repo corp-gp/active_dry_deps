@@ -1,69 +1,54 @@
 # frozen_string_literal: true
 
 module ActiveDryDeps
-
   module StubDeps
+    CONTAINER_ORIG = nil
+    SHARED_STUBS   = {}
 
     def stub(key, value)
       self::CONTAINER.stub(key, value)
     end
 
     def unstub(*keys)
-      self::CONTAINER.unstub(*keys)
+      self::CONTAINER.unstub(*keys, container: CONTAINER_ORIG.merge(SHARED_STUBS))
     end
 
     def shared_stub(key, value)
-      self::CONTAINER.stub(key, value, shared: true)
+      SHARED_STUBS[key] = value
+      self::CONTAINER.stub(key, value)
     end
 
     def shared_unstub(*keys)
-      self::CONTAINER.unstub(*keys, shared: true)
+      self::CONTAINER.unstub(*keys, container: CONTAINER_ORIG)
     end
-
   end
 
   module StubContainer
-
-    def self.extended(container)
-      const_set(:CONTAINER_ORIG, container.dup)
-      const_set(:SHARED_STUBS, {})
-    end
-
-    def stub(key, value, shared: false)
-      SHARED_STUBS[key] = value if shared
-
+    def stub(key, value)
       self[key] = value
     end
 
-    def unstub(*unstub_keys, shared: false)
-      unstubbed_container =
-        if shared
-          CONTAINER_ORIG
-        else
-          CONTAINER_ORIG.merge(SHARED_STUBS)
-        end
+    def unstub(*unstub_keys, container:)
       if unstub_keys.empty?
-        replace(unstubbed_container)
+        replace(container)
       else
         unstub_keys.each do |key|
-          if unstubbed_container.key?(key)
-            self[key] = unstubbed_container[key]
+          if container.key?(key)
+            self[key] = container[key]
           else
             delete(key)
           end
         end
       end
     end
-
   end
 
   module Deps
-
     def self.enable_stubs!
+      StubDeps.const_set(:CONTAINER_ORIG, Deps::CONTAINER.dup)
+
       Deps::CONTAINER.extend(StubContainer)
       Deps.extend StubDeps
     end
-
   end
-
 end

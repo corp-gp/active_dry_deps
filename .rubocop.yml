@@ -15,3 +15,9 @@ Gp/ModuleMethodInWrongFile:
 
 AllCops:
   TargetRubyVersion: 3.0
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
