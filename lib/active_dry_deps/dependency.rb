@@ -47,7 +47,7 @@ module ActiveDryDeps
     METHODS_AS_KLASS  = %w[perform_later call].freeze
 
     private def parse_resolver(resolver, receiver_method_alias:)
-      container_key_or_const_name, method_name = resolver.to_s.split('.', 2)
+      container_key_or_const_name, method_name = resolver.to_s.split(".", 2)
 
       container_key, const_name =
         if LOWER.match?(container_key_or_const_name[0])
@@ -74,7 +74,7 @@ module ActiveDryDeps
         elsif method_name && METHODS_AS_KLASS.exclude?(method_name)
           method_name
         elsif const_name
-          const_name.split('::').last
+          const_name.split("::").last
         else
           resolver
         end
