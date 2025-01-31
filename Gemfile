@@ -8,7 +8,7 @@ gem 'rake', '~> 13.0'
 
 gem 'rspec', '~> 3.0'
 
-gem 'activesupport'
+gem 'activesupport', '~> 7.2'
 gem 'combustion'
-gem 'railties'
+gem 'railties', '~> 7.2'
 gem 'rubocop-gp', github: 'corp-gp/rubocop-gp', require: false
