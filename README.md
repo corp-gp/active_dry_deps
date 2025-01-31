@@ -185,7 +185,7 @@ it 'stub' do
 end
 ```
 
-#### shared_stub, shared_unstub
+#### global_stub, global_unstub
 Sometimes it is necessary to stub dependencies for all or almost all tests
 
 # spec/rails_helper.rb
@@ -193,10 +193,10 @@ Sometimes it is necessary to stub dependencies for all or almost all tests
 # ...
 Deps.enable_stubs!
 
-Deps.shared_stub('PushService', Class.new { def self.call = 'webpush' })
+Deps.global_stub('PushService', Class.new { def self.call = 'webpush' })
 ```
 
-Dependency stubbed with `shared_stub` may be restored only with `shared_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
+Dependency stubbed with `global_stub` may be restored only with `shared_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
 
 ```ruby
 it 'sends webpush' do
@@ -206,7 +206,7 @@ it 'sends webpush' do
 end
 ```
 
-*`Deps.shared_stub` should not be used within examples*
+*`Deps.global_stub` should not be used within examples*
 
 ## Configuration
 The gem is auto-configuring, but you can override settings
