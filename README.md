@@ -193,7 +193,7 @@ Sometimes it is necessary to stub dependencies for all or almost all tests
 # ...
 Deps.enable_stubs!
 
-Deps.global_stub('PushService', Class.new { def self.call = 'webpush' })
+Deps.global_stub('PushService', Class.new { def self.call = 'global-stub-push' })
 ```
 
 Dependency stubbed with `global_stub` may be restored only with `global_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
