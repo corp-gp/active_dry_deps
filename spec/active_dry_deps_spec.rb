@@ -41,6 +41,29 @@ RSpec.describe ActiveDryDeps do
     }.to raise_error(ActiveDryDeps::DependencyNameInvalid, 'name +!invalid_identifier+ is not a valid Ruby identifier')
   end
 
+  context 'when dependency missing' do
+    it 'fails when const not defined' do
+      expect {
+        service = Class.new { include Deps['UndefinedConst'] }
+        service.new.UndefinedConst()
+      }.to raise_error(NameError, /uninitialized constant.*UndefinedConst/)
+    end
+
+    it 'fails when dependency not registered' do
+      expect {
+        service = Class.new { include Deps['unknown_method'] }
+        service.new.unknown_method
+      }.to raise_error(ActiveDryDeps::DependencyNotRegistered, /.+unknown_method.+not registered/)
+    end
+
+    it 'fails when method not defined' do
+      expect {
+        service = Class.new { include Deps['CreateOrder.unknown_method'] }
+        service.new.unknown_method
+      }.to raise_error(NoMethodError, /undefined method `unknown_method' for CreateOrder/)
+    end
+  end
+
   describe '#register' do
     it 'checks the container key' do
       expect {
@@ -50,18 +73,25 @@ RSpec.describe ActiveDryDeps do
   end
 
   describe '#stub' do
-    def expect_call_orig
-      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track]
-    end
-
     it 'stubs dependency at the container level' do
       Deps.stub('CreateDeparture', double(call: '1'))
 
       expect(CreateOrder.call).to eq %w[1 1 job-performed message-ok email-sent-hello track]
+    end
 
+    it 'unstub dependency' do
+      Deps.stub('CreateDeparture', double(call: '1'))
       Deps.unstub
 
-      expect_call_orig
+      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track]
+    end
+
+    it 'stubs dependency with nil' do
+      Deps.stub('tick', nil)
+
+      service = CreateOrder.new
+
+      expect(service.tick).to be_nil
     end
 
     it 'raises exception when calls a stub block' do
@@ -71,10 +101,6 @@ RSpec.describe ActiveDryDeps do
 
       expect { CreateOrder.call }
         .to raise_error(StandardError, 'Something went wrong')
-
-      Deps.unstub
-
-      expect_call_orig
     end
   end
 end
