@@ -61,7 +61,7 @@ RSpec.describe ActiveDryDeps do
       expect {
         service = Class.new { include Deps["CreateOrder.unknown_method"] }
         service.new.unknown_method
-      }.to raise_error(NoMethodError, /undefined method `unknown_method' for CreateOrder/)
+      }.to raise_error(NoMethodError, /undefined method.+unknown_method.+CreateOrder/)
     end
   end
 
