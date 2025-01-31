@@ -2,7 +2,7 @@
 
 RSpec.describe ActiveDryDeps do
   it "all dependencies works" do
-    expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track push]
+    expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track global-stub-push]
   end
 
   it "stub dependencies with `deps`" do
@@ -99,16 +99,26 @@ RSpec.describe ActiveDryDeps do
     end
   end
 
+  describe "#reset" do
+    it "unstab all dependencies" do
+      Deps.stub("CreateDeparture", double(call: "!"))
+      Deps.stub("tick", nil)
+      Deps.reset
+
+      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track global-stub-push]
+    end
+  end
+
   describe "#unstub" do
     it "unstub dependency" do
       Deps.stub("CreateDeparture", double(call: "!"))
-      Deps.unstub
+      Deps.unstub("CreateDeparture")
 
-      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track push]
+      expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track global-stub-push]
     end
 
     it "unstub global" do
-      Deps.global_unstub
+      Deps.global_unstub("PushService")
 
       expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track original-push]
     end

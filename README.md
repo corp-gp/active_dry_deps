@@ -142,7 +142,7 @@ require 'active_dry_deps/stub'
 Deps.enable_stubs!
 
 RSpec.configure do |config|
-  config.after(:each) { Deps.unstub }
+  config.after(:each) { Deps.reset }
 end
 ```
 
@@ -172,7 +172,7 @@ it 'success' do
 end
 ```
 
-#### stub, unstub
+#### stub, unstub, reset
 Dependency can be stubbed at the container level. This allows to override all calls to it
 
 ```ruby
@@ -180,7 +180,7 @@ it 'stub' do
   Deps.stub('Order::Dependency', double(call: 'success'))
   expect(service_klass.new.call).to be 'success'
 
-  Deps.unstub('Order::Dependency') # or Deps.unstub() for unsub all keys
+  Deps.unstub('Order::Dependency') # or Deps.reset for unsub all keys
   expect(service_klass.new.call).to be 'failure'
 end
 ```

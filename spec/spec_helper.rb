@@ -31,7 +31,7 @@ Dir["./spec/support/*.rb"].each { |f| require f }
 
 require "active_dry_deps/rspec"
 
-Deps.global_stub("PushService", Class.new { def self.call = "push" })
+Deps.global_stub("PushService", Class.new { def self.call = "global-stub-push" })
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
