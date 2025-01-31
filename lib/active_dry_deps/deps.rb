@@ -14,7 +14,7 @@ module ActiveDryDeps
     def [](*keys, **aliases)
       m = Module.new
 
-      receiver_methods = +''
+      receiver_methods = +""
 
       keys.each do |resolver|
         receiver_methods << Dependency.new(resolver).receiver_method_string << "\n"

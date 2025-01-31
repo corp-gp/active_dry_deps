@@ -3,7 +3,7 @@
 class CreateDeparture
 
   def self.call
-    'CreateDeparture'
+    "CreateDeparture"
   end
 
 end

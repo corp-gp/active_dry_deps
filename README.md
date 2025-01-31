@@ -140,13 +140,17 @@ require 'active_dry_deps/rspec'
 require 'active_dry_deps/stub'
 
 Deps.enable_stubs!
+
+RSpec.configure do |config|
+  config.after(:each) { Deps.reset }
+end
 ```
 
 #### deps
 The gem adds Rspec matcher `deps` for stub dependency
 
 ```ruby
-Deps.register('order.dependency') { Class.new { def self.call = 'failure' } }
+Deps.register('order.dependency', Class.new { def self.call = 'failure' })
 
 let(:service_klass) do
   Class.new do
@@ -168,7 +172,7 @@ it 'success' do
 end
 ```
 
-#### stub, unstub
+#### stub, unstub, reset
 Dependency can be stubbed at the container level. This allows to override all calls to it
 
 ```ruby
@@ -176,10 +180,33 @@ it 'stub' do
   Deps.stub('Order::Dependency', double(call: 'success'))
   expect(service_klass.new.call).to be 'success'
 
-  Deps.unstub('Order::Dependency') # or Deps.unstub() for unsub all keys
+  Deps.unstub('Order::Dependency') # or Deps.reset for unsub all keys
   expect(service_klass.new.call).to be 'failure'
 end
 ```
+
+#### global_stub, global_unstub
+Sometimes it is necessary to stub dependencies for all or almost all tests
+
+# spec/rails_helper.rb
+```ruby
+# ...
+Deps.enable_stubs!
+
+Deps.global_stub('PushService', Class.new { def self.call = 'global-stub-push' })
+```
+
+Dependency stubbed with `global_stub` may be restored only with `global_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
+
+```ruby
+it 'sends webpush' do
+  Deps.global_unstub('PushService')
+  
+  # expect(PushService.call).to ...
+end
+```
+
+*`Deps.global_stub` should not be used within examples*
 
 ## Configuration
 The gem is auto-configuring, but you can override settings

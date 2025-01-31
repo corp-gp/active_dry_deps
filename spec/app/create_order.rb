@@ -7,13 +7,14 @@ class CreateOrder
   end
 
   include Deps[
-    'CreateDeparture',
-    'Utils.message',
-    'SupplierSync::ReserveJob.perform_later',
-    'mailer',
-    'tick',
-    'stats.track',
-    CreateDepartureCallable: 'CreateDeparture.call',
+    "CreateDeparture",
+    "Utils.message",
+    "SupplierSync::ReserveJob.perform_later",
+    "mailer",
+    "tick",
+    "stats.track",
+    "PushService",
+    CreateDepartureCallable: "CreateDeparture.call",
   ]
 
   def call(is_message: true)
@@ -21,9 +22,10 @@ class CreateOrder
       CreateDepartureCallable(),
       CreateDeparture().call,
       ReserveJob(),
-      (message('ok') if is_message),
-      mailer.call('hello'),
+      (message("ok") if is_message),
+      mailer.call("hello"),
       track,
+      PushService().call,
     ]
   end
 
