@@ -196,11 +196,11 @@ Deps.enable_stubs!
 Deps.global_stub('PushService', Class.new { def self.call = 'webpush' })
 ```
 
-Dependency stubbed with `global_stub` may be restored only with `shared_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
+Dependency stubbed with `global_stub` may be restored only with `global_unstub`. You can unstub dependency when it really needed and ignore in all other cases 
 
 ```ruby
 it 'sends webpush' do
-  Deps.shared_unstub('PushService')
+  Deps.global_unstub('PushService')
   
   # expect(PushService.call).to ...
 end
