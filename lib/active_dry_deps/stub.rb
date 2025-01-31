@@ -7,16 +7,16 @@ module ActiveDryDeps
     end
 
     def unstub(*keys)
-      self::CONTAINER.unstub(*keys, container: CONTAINER_ORIG.merge(GLOBAL_STUBS))
+      self::CONTAINER.unstub(*keys, container: ORIGINAL_WITH_GLOBAL)
     end
 
     def global_stub(key, value)
-      GLOBAL_STUBS[key] = value
+      ORIGINAL_WITH_GLOBAL[key] = value
       self::CONTAINER.stub(key, value)
     end
 
     def global_unstub(*keys)
-      self::CONTAINER.unstub(*keys, container: CONTAINER_ORIG)
+      self::CONTAINER.unstub(*keys, container: ORIGINAL)
     end
   end
 
@@ -42,8 +42,8 @@ module ActiveDryDeps
 
   module Deps
     def self.enable_stubs!
-      StubDeps.const_set(:CONTAINER_ORIG, Deps::CONTAINER.dup)
-      StubDeps.const_set(:GLOBAL_STUBS, {})
+      StubDeps.const_set(:ORIGINAL, Deps::CONTAINER.dup)
+      StubDeps.const_set(:ORIGINAL_WITH_GLOBAL, Deps::CONTAINER.dup)
 
       Deps::CONTAINER.extend(StubContainer)
       Deps.extend StubDeps
