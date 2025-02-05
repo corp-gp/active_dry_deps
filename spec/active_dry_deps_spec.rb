@@ -123,4 +123,24 @@ RSpec.describe ActiveDryDeps do
       expect(CreateOrder.call).to eq %w[CreateDeparture CreateDeparture job-performed message-ok email-sent-hello track original-push]
     end
   end
+
+  describe "#subscribe" do
+    it "subscribes to include dependency event" do
+      events = []
+
+      Deps.subscribe(:included_dependency) do |event|
+        events << event
+      end
+
+      expect {
+        TestCase = Class.new { include Deps["CreateOrder"] }
+      }.to change(events, :size).by(1)
+
+      last_event = events.last
+
+      expect(last_event[:receiver]).to eq TestCase
+      expect(last_event[:dependencies].size).to eq 1
+      expect(last_event[:dependencies][0].const_name).to eq "CreateOrder"
+    end
+  end
 end

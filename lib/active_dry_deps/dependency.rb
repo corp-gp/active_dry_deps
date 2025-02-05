@@ -31,6 +31,10 @@ module ActiveDryDeps
       end
     end
 
+    def const_get
+      Object.const_get(@const_name) if @const_name
+    end
+
     private def dependency_not_registered_error_string
       dependency_name = @container_key || @const_name
       <<~RUBY
