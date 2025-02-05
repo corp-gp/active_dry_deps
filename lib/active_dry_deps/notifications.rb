@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'dry-monitor'
+require "dry-monitor"
 
 module ActiveDryDeps
   module Notifications
@@ -8,7 +8,7 @@ module ActiveDryDeps
     module_function
 
     EVENT_BUS =
-      Dry::Monitor::Notifications.new('active_dry_deps.monitor').tap do |notifications|
+      Dry::Monitor::Notifications.new("active_dry_deps.monitor").tap do |notifications|
         notifications.register_event(:included_dependency)
       end
 
@@ -16,7 +16,7 @@ module ActiveDryDeps
       Module.new.tap do |m|
         m.define_singleton_method(:included) do |enum_module|
           enum_module.define_singleton_method(:included) do |enum_receiver|
-            EVENT_BUS.instrument(:included_dependency, receiver: enum_receiver.name, dependencies: dependencies)
+            EVENT_BUS.instrument(:included_dependency, receiver: enum_receiver, dependencies: dependencies)
           end
         end
       end

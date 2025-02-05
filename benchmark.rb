@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require 'bundler/inline'
+require "bundler/inline"
 
 gemfile do
-  source 'https://rubygems.org'
+  source "https://rubygems.org"
 
-  gem 'benchmark-ips', require: 'benchmark/ips'
-  gem 'kalibera'
-  gem 'rails'
-  gem 'dry-container'
-  gem 'dry-system'
-  gem 'active_dry_deps', path: '.'
+  gem "benchmark-ips", require: "benchmark/ips"
+  gem "kalibera"
+  gem "rails"
+  gem "dry-container"
+  gem "dry-system"
+  gem "active_dry_deps", path: "."
 end
 
 LOADER =
@@ -26,7 +26,7 @@ LOADER =
     end
   end
 
-require 'dry/system/container'
+require "dry/system/container"
 class Container < Dry::System::Container; end
 
 PROVIDERS = 10.times.to_a.map { "provider#{_1}" }
@@ -40,7 +40,7 @@ end
 Container.finalize!
 p Container.keys
 
-ActiveDryDeps.config.container = 'Container'
+ActiveDryDeps.config.container = "Container"
 
 module ActiveDryDeps
   module CurrentDeps
@@ -55,7 +55,7 @@ module ActiveDryDeps
     # include Deps['Lib::Routes'] use as `Routes()`
     # include Deps['OrderService::Recalculate.call'] use as `Recalculate()`
     def [](*keys, **aliases)
-      str_methods = +''
+      str_methods = +""
 
       keys.each { |resolver| str_methods << str_method(resolver, nil) }
       aliases.each { |alias_method, resolver| str_methods << str_method(resolver, alias_method) }
@@ -66,13 +66,13 @@ module ActiveDryDeps
     end
 
     private def str_method(resolve, alias_method)
-      resolve_klass, extract_method = resolve.split('.')
+      resolve_klass, extract_method = resolve.split(".")
 
       alias_method ||=
         if extract_method && METHODS_AS_KLASS.exclude?(extract_method)
           extract_method
         else
-          resolve_klass.split('::').last
+          resolve_klass.split("::").last
         end
 
       if alias_method && !VALID_NAME.match?(alias_method.to_s)
@@ -89,7 +89,7 @@ module ActiveDryDeps
     end
 
     def resolve_key(key)
-      ActiveDryDeps.config.inflector.underscore(key).tr('/', '.')
+      ActiveDryDeps.config.inflector.underscore(key).tr("/", ".")
     end
 
     instance_eval <<~RUBY, __FILE__, __LINE__ + 1
@@ -116,10 +116,10 @@ test_case_new = Array.new(CASES_COUNT) { Class.new }
 puts "\nBenchmark multiple include with multiple providers"
 Benchmark.ips do |x|
   x.warmup = 0
-  x.report('current') do
+  x.report("current") do
     test_case_current.shift.include(ActiveDryDeps::CurrentDeps[*PROVIDERS])
   end
-  x.report('new') do
+  x.report("new") do
     test_case_new.shift.include(ActiveDryDeps::Deps[*PROVIDERS])
   end
   x.compare!
@@ -158,14 +158,15 @@ test_case_new = Class.new { include(ActiveDryDeps::Deps[*PROVIDERS]) }.new
 puts "\nBenchmark provider"
 Benchmark.ips do |x|
   x.warmup = 0
-  x.report('current') do
+  x.report("current") do
     PROVIDERS.each { test_case_current.public_send(_1) }
   end
-  x.report('new') do
+  x.report("new") do
     PROVIDERS.each { test_case_new.public_send(_1) }
   end
   x.compare!
-end; 1
+end
+1
 
 # m1 = Module.new
 # m2 = Module.new

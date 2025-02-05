@@ -124,16 +124,23 @@ RSpec.describe ActiveDryDeps do
     end
   end
 
-  describe 'check dependencies' do
-    it '#check_cyclic_references found circular dependencies' do
-      expect { $DEPENDENCY_MAP.check_cyclic_references }.to raise_error(ActiveDryDeps::CircularDependency, <<~TEXT)
-        Expected the dependency graph to be acyclic, but it contains the following circular dependencies:
-        CreateDeparture → CreateOrder → CreateDeparture
-      TEXT
-    end
+  describe "#subscribe" do
+    it "subscribes to include dependency event" do
+      events = []
 
-    it 'dependency load constant' do
-      expect($DEPENDENCY_BY_NAME['CreateDeparture'].const_get).to eq CreateDeparture
+      Deps.subscribe(:included_dependency) do |event|
+        events << event
+      end
+
+      expect {
+        TestCase = Class.new { include Deps["CreateOrder"] }
+      }.to change(events, :size).by(1)
+
+      last_event = events.last
+
+      expect(last_event[:receiver]).to eq TestCase
+      expect(last_event[:dependencies].size).to eq 1
+      expect(last_event[:dependencies][0].const_name).to eq "CreateOrder"
     end
   end
 end

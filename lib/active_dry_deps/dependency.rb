@@ -32,7 +32,7 @@ module ActiveDryDeps
     end
 
     def const_get
-      Deps::CONTAINER.resolve_internal(@const_name) if @const_name
+      Object.const_get(@const_name) if @const_name
     end
 
     private def dependency_not_registered_error_string

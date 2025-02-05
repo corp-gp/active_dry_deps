@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 namespace :active_dry_deps do
-  desc 'Check dependency graph'
+  desc "Check dependency graph"
   task check_cyclic_references: :environment do
     dependency_map = ActiveDryDeps::DependencyMap.new
 
@@ -9,7 +9,7 @@ namespace :active_dry_deps do
       dependency_map.register(event[:receiver], event[:dependencies].map(&:name))
     end
 
-    require Rails.root.join('config/environment.rb')
+    require Rails.root.join("config/environment.rb")
 
     dependency_map.check_cyclic_references
   end

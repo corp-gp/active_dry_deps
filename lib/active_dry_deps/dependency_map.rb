@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "tsort"
+
 module ActiveDryDeps
   class DependencyMap
 
@@ -27,14 +29,14 @@ module ActiveDryDeps
 
     def check_cyclic_references
       if references.empty?
-        raise ArgumentError, 'No dependency map. You should eager load all your code (or make sure, you are in production environment)'
+        raise ArgumentError, "No dependency map. You should eager load all your code (or make sure, you are in production environment)"
       end
 
       return true if acyclic?
 
       errors =
         cycles.map do |cyclic_references|
-          (cyclic_references + [cyclic_references.first]).join(' → ')
+          (cyclic_references + [cyclic_references.first]).join(" → ")
         end
 
       raise CircularDependency, <<~TEXT
